@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/kitsune-logo.png" width="180" alt="Kitsune">
+  <img src="./assets/kitsune-logo.png" width="260" alt="Kitsune">
 </p>
 
 <h1 align="center">Kitsune</h1>
