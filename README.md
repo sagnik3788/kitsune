@@ -14,82 +14,18 @@
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    subgraph External["External Actors"]
-        A1[AI Agent<br/>opencode]
-        A2[AI Agent<br/>Claude Code]
-        A3[AI Agent<br/>Cursor]
-        D1[Developer]
-    end
+<p align="center">
+  <img src="./assets/kitsune-architecture.svg" width="900" alt="Kitsune Architecture">
+</p>
 
-    subgraph PluginLayer["Plugin Layer — Thin Adapters"]
-        P1[opencode Plugin<br/>TypeScript<br/>Tool call interception]
-        P2[Claude Code Hook<br/>PreToolUse hook]
-        P3[Cursor MCP Config<br/>Advisory enforcement]
-    end
+**6 layers, left-to-right data flow:**
 
-    subgraph Gateway["MCP Gateway — FastAPI"]
-        direction TB
-        API[MCP API Endpoints]
-        Auth[Auth Module<br/>API Keys]
-        SM[Session Manager<br/>phase / edits / turns]
-        WF[Workflow CRUD<br/>YAML load/create/list]
-        Hist[Run History<br/>timelines / metrics]
-    end
-
-    subgraph Engine["Python Engine — Pure FSM"]
-        CK[checkphase, tool, workflow]
-        GR[Guardrails]
-        Trans[Transition Logic<br/>READY → DONE → PASS → FAIL]
-    end
-
-    subgraph Store["Session Store"]
-        R1[(Redis<br/>Distributed)]
-        R2[(SQLite<br/>Local / Docker)]
-        R3[(In-Memory<br/>Single dev)]
-    end
-
-    subgraph Dashboard["Dashboard — Vanilla JS SPA"]
-        VIS[Visual Editor<br/>Drag-drop phases]
-        YAML[YAML Editor<br/>Live sync]
-        RUN[Run History<br/>Timeline view]
-    end
-
-    A1 -->|MCP over stdio| P1
-    A2 -->|PreToolUse hook| P2
-    A3 -->|MCP config| P3
-
-    P1 -->|kitsune_check_tool| API
-    P2 -->|kitsune_check_tool| API
-    P3 -->|kitsune_check_tool| API
-
-    API --> Auth
-    Auth --> SM
-    SM --> WF
-    SM --> Hist
-
-    SM -->|check| CK
-    CK --> GR
-    CK --> Trans
-    CK -->|bool: ALLOW / BLOCK| SM
-
-    SM -->|read/write session| R1
-    SM -->|read/write session| R2
-    SM -->|read/write session| R3
-
-    D1 -->|HTTP| VIS
-    VIS -->|CRUD workflows| API
-    YAML -->|load/create workflow| API
-    RUN -->|fetch history| Hist
-
-    style External fill:#e1f5fe
-    style PluginLayer fill:#fff3e0
-    style Gateway fill:#e8f5e9
-    style Engine fill:#fce4ec
-    style Store fill:#f3e5f5
-    style Dashboard fill:#fffde7
-```
+1. **External Actors** — AI agents (opencode, Claude Code, Cursor) + Developers
+2. **Plugin Layer** — Thin adapters (<100 lines each) that intercept tool calls
+3. **MCP Gateway** — FastAPI service: auth, session management, workflow CRUD, run history
+4. **Python Engine** — Pure FSM function `check(phase, tool, workflow) → bool`
+5. **Session Store** — User-configurable: Redis (cluster), SQLite (local), or In-Memory (single dev)
+6. **Dashboard** — Vanilla JS SPA: visual editor, YAML editor, run history
 
 ---
 

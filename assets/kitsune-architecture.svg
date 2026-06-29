@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1682.00" height="792.50" viewBox="0 0 1682.00 792.50">
+<defs>
+    <marker id="arr-495057" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#495057"/></marker>
+  </defs>
+<rect width="1682.00" height="792.50" fill="#ffffff"/>
+<rect x="311.50" y="123.00" width="140.00" height="55.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="294.00" y="684.50" width="175.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="311.50" y="496.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="311.50" y="308.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="927.50" y="172.50" width="140.00" height="340.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="1226.00" y="40.00" width="157.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="1221.50" y="168.00" width="166.00" height="340.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="1485.00" y="158.00" width="157.00" height="86.00" rx="8" fill="#ffe3e3" stroke="#c92a2a" stroke-width="2" opacity="1.00"/>
+<rect x="1539.00" y="164.00" width="49.00" height="21.00" rx="8" fill="#e9ecef" stroke="#c92a2a" stroke-width="1" opacity="1.00"/>
+<rect x="1493.50" y="364.00" width="140.00" height="86.00" rx="8" fill="#e7f5ff" stroke="#1971c2" stroke-width="2" opacity="1.00"/>
+<rect x="1548.90" y="370.00" width="29.20" height="21.00" rx="8" fill="#e9ecef" stroke="#1971c2" stroke-width="1" opacity="1.00"/>
+<rect x="1493.50" y="570.00" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="615.50" y="52.50" width="166.00" height="68.00" rx="8" fill="#f1f3f5" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="628.50" y="240.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="40.00" y="684.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="49.50" y="496.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<rect x="57.50" y="308.50" width="140.00" height="68.00" rx="8" fill="#f8f9fa" stroke="#495057" stroke-width="2" opacity="1.00"/>
+<path d="M 180.00,718.50 L 294.00,718.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 189.50,530.50 L 311.50,530.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 197.50,342.50 L 311.50,342.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 469.00,692.50 L 652.40,535.20 L 927.50,450.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 451.50,504.50 L 927.50,396.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 451.50,342.50 L 927.50,342.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1067.50,288.50 L 1226.00,100.00" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1226.00,100.00 L 1067.50,180.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1067.50,396.50 L 1221.50,342.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1387.50,257.00 L 1485.00,236.00" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1387.50,338.00 L 1493.50,372.00" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 1387.50,419.00 L 1493.50,578.00" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 451.50,144.00 L 615.50,112.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 781.50,112.50 L 927.50,234.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 451.50,157.00 L 628.50,248.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<path d="M 768.50,300.50 L 927.50,288.50" fill="none" stroke="#495057" stroke-width="2" opacity="1.00" marker-end="url(#arr-495057)"/>
+<text x="381.50" y="140.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="381.50" dy="16.00">Developer</tspan></text>
+<text x="381.50" y="698.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="381.50" dy="16.00">opencode Plugin</tspan><tspan x="381.50" dy="20.00">TypeScript</tspan></text>
+<text x="381.50" y="510.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="381.50" dy="16.00">Claude Hook</tspan><tspan x="381.50" dy="20.00">PreToolUse</tspan></text>
+<text x="381.50" y="322.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="381.50" dy="16.00">Cursor MCP</tspan><tspan x="381.50" dy="20.00">Advisory</tspan></text>
+<text x="997.50" y="322.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="997.50" dy="16.00">MCP Gateway</tspan><tspan x="997.50" dy="20.00">FastAPI</tspan></text>
+<text x="1304.50" y="54.00" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="1304.50" dy="16.00">Python Engine</tspan><tspan x="1304.50" dy="20.00">Pure FSM</tspan></text>
+<text x="1304.50" y="318.00" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="1304.50" dy="16.00">Session Store</tspan><tspan x="1304.50" dy="20.00">(configurable)</tspan></text>
+<text x="1563.50" y="189.00" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="1563.50" dy="16.00">Redis</tspan><tspan x="1563.50" dy="20.00">500-10k+ devs</tspan></text>
+<text x="1563.50" y="167.00" font-size="12" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1563.50" dy="12.00">Cache</tspan></text>
+<text x="1563.50" y="395.00" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="1563.50" dy="16.00">SQLite</tspan><tspan x="1563.50" dy="20.00">5-500 devs</tspan></text>
+<text x="1563.50" y="373.00" font-size="12" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1563.50" dy="12.00">DB</tspan></text>
+<text x="1563.50" y="584.00" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="1563.50" dy="16.00">In-Memory</tspan><tspan x="1563.50" dy="20.00">1 dev</tspan></text>
+<text x="698.50" y="66.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="698.50" dy="16.00">Dashboard</tspan><tspan x="698.50" dy="20.00">Vanilla JS SPA</tspan></text>
+<text x="698.50" y="254.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="698.50" dy="16.00">Run History</tspan><tspan x="698.50" dy="20.00">Timeline</tspan></text>
+<text x="110.00" y="698.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="110.00" dy="16.00">AI Agent</tspan><tspan x="110.00" dy="20.00">opencode</tspan></text>
+<text x="119.50" y="510.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="119.50" dy="16.00">AI Agent</tspan><tspan x="119.50" dy="20.00">Claude Code</tspan></text>
+<text x="127.50" y="322.50" font-size="16" font-family="cursive" fill="#1e1e1e" text-anchor="middle" opacity="1.00"><tspan x="127.50" dy="16.00">AI Agent</tspan><tspan x="127.50" dy="20.00">Cursor</tspan></text>
+<text x="237.00" y="709.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="237.00" dy="14.00">MCP</tspan></text>
+<text x="250.50" y="521.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="250.50" dy="14.00">Hook</tspan></text>
+<text x="254.50" y="333.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="254.50" dy="14.00">MCP</tspan></text>
+<text x="674.49" y="519.65" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="674.49" dy="14.00">check_tool()</tspan></text>
+<text x="689.50" y="441.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="689.50" dy="14.00">check_tool()</tspan></text>
+<text x="689.50" y="333.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="689.50" dy="14.00">check_tool()</tspan></text>
+<text x="1146.75" y="185.50" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1146.75" dy="14.00">check()</tspan></text>
+<text x="1146.75" y="131.50" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1146.75" dy="14.00">ALLOW / BLOCK</tspan></text>
+<text x="1144.50" y="360.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1144.50" dy="14.00">read / write</tspan></text>
+<text x="1436.25" y="237.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1436.25" dy="14.00">option</tspan></text>
+<text x="1440.50" y="346.25" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1440.50" dy="14.00">option</tspan></text>
+<text x="1440.50" y="489.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="1440.50" dy="14.00">option</tspan></text>
+<text x="533.50" y="119.50" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="533.50" dy="14.00">HTTP</tspan></text>
+<text x="854.50" y="164.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="854.50" dy="14.00">CRUD</tspan></text>
+<text x="540.00" y="194.00" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="540.00" dy="14.00">HTTP</tspan></text>
+<text x="848.00" y="285.75" font-size="14" font-family="cursive" fill="#495057" text-anchor="middle" opacity="1.00"><tspan x="848.00" dy="14.00">fetch</tspan></text>
+</svg>
