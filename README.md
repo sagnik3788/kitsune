@@ -15,7 +15,7 @@
 ## Architecture
 
 <p align="center">
-  <img src="./assets/kitsune-architecture.svg" width="900" alt="Kitsune Architecture">
+  <img src="./assets/kitsune-architecture.png" width="900" alt="Kitsune Architecture">
 </p>
 
 **6 layers, left-to-right data flow:**
