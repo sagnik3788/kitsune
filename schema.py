@@ -15,6 +15,27 @@ from datetime import datetime, timezone, timedelta
 # update the user profile biling usage in turso [usage model]
 
 
+class GuardOp(str, Enum):
+    equal = "eq"
+    not_equal = "neq"
+    greater_than = "gt"
+    greater_than_equal = "gte"
+    less_than = "lt"
+    less_than_equal = "lte"
+    in_ = "in"
+    contains = "contains"
+    exists = "exists"
+    not_exists = "not_exists"
+
+# usage:
+# Guard(field="turn_count", op="lt", value=8) rule//
+# if turn_count becomes 9 , block
+class Guard(BaseModel):
+    field: str
+    op: GuardOp
+    value: Any
+    message: Optional[str] = None
+
 class MCPRequest(BaseModel):
     session_id: str
     tool: str
@@ -28,8 +49,9 @@ class Session(BaseModel):
     run_id: str
     current_phase: str
     turn_count: int = 0
-    edit_count: int = 0
+    counters: dict[str, int] = Field(default_factory=dict)
     files_touched: list[str] = Field(default_factory=list)
+    plan_limit: int = 200  # default free plan limit
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: datetime = Field(
@@ -63,27 +85,40 @@ class APIKey(BaseModel):
 
 class Phase(BaseModel):
     """
-    Example in workflow YAML:
-        phases:
-          plan:
-            tools: ["read", "grep", "glob"]
-            max_turns: 8
-            on:
-              READY: "implement"
+        Example:
+            phases:
+              plan:
+                tools: ["read", "grep", "glob"]
+                guards:
+                  - field: turn_count
+                    op: less_than
+                    value: 8
+                  - field: max_turn
+                    op: equal
+                    value: 20
+                on:
+                  READY: "implement"
 
-          implement:
-            tools: ["read", "edit", "write"]
-            max_edits: 20
-            max_files: 3
-            on:
-              DONE: "test"
-    """
+              implement:
+                tools: ["read", "edit", "write"]
+                tool_guards:
+                  edit:
+                    - field: edit_count
+                      op: less_than
+                      value: 20
+                on:
+                  DONE: "test"
+        """
 
     tools: list[str] = Field(default_factory=list)
-    max_turns: Optional[int] = None
-    max_edits: Optional[int] = None
-    max_files: Optional[int] = None
+    # max_turns: Optional[int] = None
+    # max_edits: Optional[int] = None
+    # max_files: Optional[int] = None
     commands: Optional[list[str]] = None
+    # guards are for in general all the tools in a phase
+    # tool_guards are a specific tool
+    guards: list[Guard] = Field(default_factory=list)
+    tool_guards: dict[str, list[Guard]] = Field(default_factory=dict)
     on: dict[str, str] = Field(default_factory=dict)
     type: Optional[str] = None
     requires_approval: bool = False
