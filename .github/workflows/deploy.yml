@@ -1,0 +1,26 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Azure VM
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: azureuser
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/kitsune
+            git pull origin main
+            sudo docker stop kitsune-app || true
+            sudo docker rm kitsune-app || true
+            sudo docker build \
+              --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
+              -t kitsune .
+            sudo docker run -d -p 80:8000 --env-file .env --name kitsune-app kitsune
+            echo "Deployed at $(date)"
