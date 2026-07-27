@@ -1,3 +1,11 @@
-# userless stuff for idk why
+# GitHub Linguist overrides to boost Python percentage to ~65%
+# Excluding most Vue files from language stats
+
 dashboard/src/views/WorkflowEditor.vue linguist-detectable=false
 dashboard/src/views/HomePage.vue linguist-detectable=false
+dashboard/src/views/WorkflowList.vue linguist-detectable=false
+dashboard/src/components/workflow/OffsetEdge.vue linguist-detectable=false
+dashboard/src/components/workflow/StateNode.vue linguist-detectable=false
+dashboard/src/views/ApiKeys.vue linguist-detectable=false
+dashboard/src/views/AuthPage.vue linguist-detectable=false
+dashboard/src/views/WorkflowRuns.vue linguist-detectable=false
