@@ -44,6 +44,16 @@ The agent must emit triggers (`READY`, `DONE`, `PASS`, `FAIL`) to advance. Try t
 
 ---
 
+## Visual workflow editor
+
+Design workflows on a canvas, lock tools to each phase, and export to YAML — all from your browser.
+
+<p align="center">
+  <img src="./assets/dashboard.jpeg" width="900" alt="Kitsune visual workflow editor showing phases, tools, and transitions">
+</p>
+
+---
+
 ## Quick start
 
 ```bash

@@ -33,8 +33,7 @@ async def init_db() -> None:
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
-                email TEXT NOT NULL UNIQUE,
-                github_id TEXT,
+                email TEXT,
                 plan TEXT NOT NULL DEFAULT 'free',
                 created_at TIMESTAMPTZ NOT NULL,
                 updated_at TIMESTAMPTZ NOT NULL
@@ -104,21 +103,33 @@ async def init_db() -> None:
 async def create_user(user: User) -> None:
     pool = await get_pool()
     await pool.execute(
-        "INSERT INTO users (id, email, github_id, plan, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
-        user.id, user.email, user.github_id, user.plan.value,
+        """INSERT INTO users (id, email, plan, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (id) DO UPDATE SET
+             email = EXCLUDED.email,
+             plan = EXCLUDED.plan,
+             updated_at = EXCLUDED.updated_at""",
+        user.id, user.email, user.plan.value,
         user.created_at, user.updated_at,
     )
+
+
+async def update_user(user: User) -> None:
+    pool = await get_pool()
+    await pool.execute(
+        "UPDATE users SET email = $2, plan = $3, updated_at = $4 WHERE id = $1",
+        user.id, user.email, user.plan.value, user.updated_at,
+    )
+
+
+async def delete_user(user_id: str) -> None:
+    pool = await get_pool()
+    await pool.execute("DELETE FROM users WHERE id = $1", user_id)
 
 
 async def get_user_by_id(user_id: str) -> Optional[User]:
     pool = await get_pool()
     row = await pool.fetchrow("SELECT * FROM users WHERE id = $1", user_id)
-    return User(**dict(row)) if row else None
-
-
-async def get_user_by_email(email: str) -> Optional[User]:
-    pool = await get_pool()
-    row = await pool.fetchrow("SELECT * FROM users WHERE email = $1", email)
     return User(**dict(row)) if row else None
 
 
@@ -140,6 +151,16 @@ async def create_api_key(api_key: APIKey) -> None:
         api_key.id, api_key.user_id, api_key.hashed_key, api_key.name,
         api_key.last_used_at, api_key.created_at,
     )
+
+async def list_api_keys(user_id: str) -> list[APIKey]:
+    pool = await get_pool()
+    rows = await pool.fetch("SELECT * FROM api_keys WHERE user_id = $1", user_id)
+    return [APIKey(**dict(row)) for row in rows]
+
+
+async def delete_api_key(key_id: str, user_id: str) -> None:
+    pool = await get_pool()
+    await pool.execute("DELETE FROM api_keys WHERE id = $1 AND user_id = $2", key_id, user_id)
 
 
 async def get_api_key_by_hash(hashed_key: str) -> Optional[APIKey]:
@@ -175,15 +196,36 @@ async def get_workflow(workflow_id: str) -> Optional[Workflow]:
     return None
 
 
+async def get_workflow_for_user(workflow_id: str, user_id: str) -> Optional[Workflow]:
+    pool = await get_pool()
+    row = await pool.fetchrow(
+        "SELECT yaml_content FROM workflows WHERE id = $1 AND user_id = $2",
+        workflow_id, user_id,
+    )
+    if row:
+        yaml_data = yaml.safe_load(row["yaml_content"])
+        return Workflow(**yaml_data)
+    return None
+
+
 async def list_workflows(user_id: str) -> list[Workflow]:
     pool = await get_pool()
     rows = await pool.fetch("SELECT yaml_content FROM workflows WHERE user_id = $1", user_id)
     return [Workflow(**yaml.safe_load(row["yaml_content"])) for row in rows]
 
 
-async def delete_workflow(workflow_id: str) -> None:
+async def update_workflow(workflow_id: str, workflow: Workflow, user_id: str) -> None:
+    yaml_content = yaml.safe_dump(workflow.model_dump(mode="json"))
+    now = datetime.now(timezone.utc)
     pool = await get_pool()
-    await pool.execute("DELETE FROM workflows WHERE id = $1", workflow_id)
+    await pool.execute(
+        "UPDATE workflows SET yaml_content = $1, name = $2, description = $3, updated_at = $4 WHERE id = $5 AND user_id = $6",
+        yaml_content, workflow.id, workflow.description, now, workflow_id, user_id,
+    )
+
+async def delete_workflow(workflow_id: str, user_id: str) -> None:
+    pool = await get_pool()
+    await pool.execute("DELETE FROM workflows WHERE id = $1 AND user_id = $2", workflow_id, user_id)
 
 
 # Run History

@@ -67,8 +67,8 @@ class PlanTier(str, Enum):
 
 class User(BaseModel):
     id: str
-    email: str
-    github_id: Optional[str] = None
+    email: Optional[str] = None
+    name: Optional[str] = None
     plan: PlanTier = PlanTier.free
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
