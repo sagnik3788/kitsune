@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #0f0f13;
+  --color-surface-2: #1a1a1f;
+  --color-surface-3: #232329;
+  --color-surface-4: #2c2c33;
+  --color-surface-5: #35353d;
+  --color-border: #2e2e35;
+  --color-border-2: #404049;
+  --color-primary: #f0f0f5;
+  --color-secondary: #a0a0ae;
+  --color-muted: #6e6e7a;
+  --color-accent: #f5a623;
+  --color-accent-hover: #e0941f;
+  --color-canvas: #131318;
+  --color-canvas-dot: #25252c;
+  --color-node-plan: #3b82f6;
+  --color-node-impl: #22c55e;
+  --color-node-test: #f59e0b;
+  --color-node-done: #6b7280;
+  --color-node-fail: #ef4444;
+  --color-happy: #22c55e;
+  --color-fail: #ef4444;
+  --color-neutral: #8b5cf6;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.vue-flow__background {
+  background-color: var(--color-canvas) !important;
+}
+
+.vue-flow__controls button {
+  background: var(--color-surface-3) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-secondary) !important;
+  fill: var(--color-secondary) !important;
+}
+
+.vue-flow__controls button:hover {
+  background: var(--color-surface-4) !important;
+}
+
+.vue-flow__minimap {
+  background: var(--color-surface-2) !important;
+}
