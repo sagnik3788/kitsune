@@ -102,3 +102,24 @@ onMounted(() => {
   })
 })
 </script>
+
+<style scoped>
+/* Force all Clerk text to be visible on dark background */
+#clerk-sign-in :deep(*) {
+  color: #f3f4f6 !important;
+}
+#clerk-sign-in :deep(.cl-socialButtonsBlockButtonText) {
+  color: #f3f4f6 !important;
+}
+#clerk-sign-in :deep(.cl-badge) {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+#clerk-sign-in :deep(input::placeholder) {
+  color: #6b7280 !important;
+}
+#clerk-sign-in :deep(.cl-footerActionLink) {
+  color: #fbbf24 !important;
+}
+</style>
