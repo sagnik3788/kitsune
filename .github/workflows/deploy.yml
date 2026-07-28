@@ -17,10 +17,15 @@ jobs:
           script: |
             cd ~/kitsune
             git pull origin main
-            sudo docker stop kitsune-app || true
-            sudo docker rm kitsune-app || true
+            # Build new image while old container is still running
             sudo docker build \
               --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
               -t kitsune .
-            sudo docker run -d -p 80:8000 --env-file .env --name kitsune-app kitsune
+            # Quick restart: downtime ~2-5 seconds
+            sudo docker stop kitsune-app || true
+            sudo docker rm kitsune-app || true
+            sudo docker run -d -p 127.0.0.1:8000:8000 --env-file .env --name kitsune-app kitsune
+            # Wait for app to be ready
+            sleep 5
+            curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/
             echo "Deployed at $(date)"
