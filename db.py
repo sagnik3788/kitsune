@@ -189,9 +189,10 @@ async def create_workflow(workflow: Workflow, user_id: str, is_template: bool = 
 
 async def get_workflow(workflow_id: str) -> Optional[Workflow]:
     pool = await get_pool()
-    row = await pool.fetchrow("SELECT yaml_content FROM workflows WHERE id = $1", workflow_id)
+    row = await pool.fetchrow("SELECT id, yaml_content FROM workflows WHERE id = $1", workflow_id)
     if row:
         yaml_data = yaml.safe_load(row["yaml_content"])
+        yaml_data["id"] = row["id"]
         return Workflow(**yaml_data)
     return None
 
@@ -199,19 +200,25 @@ async def get_workflow(workflow_id: str) -> Optional[Workflow]:
 async def get_workflow_for_user(workflow_id: str, user_id: str) -> Optional[Workflow]:
     pool = await get_pool()
     row = await pool.fetchrow(
-        "SELECT yaml_content FROM workflows WHERE id = $1 AND user_id = $2",
+        "SELECT id, yaml_content FROM workflows WHERE id = $1 AND user_id = $2",
         workflow_id, user_id,
     )
     if row:
         yaml_data = yaml.safe_load(row["yaml_content"])
+        yaml_data["id"] = row["id"]
         return Workflow(**yaml_data)
     return None
 
 
 async def list_workflows(user_id: str) -> list[Workflow]:
     pool = await get_pool()
-    rows = await pool.fetch("SELECT yaml_content FROM workflows WHERE user_id = $1", user_id)
-    return [Workflow(**yaml.safe_load(row["yaml_content"])) for row in rows]
+    rows = await pool.fetch("SELECT id, yaml_content FROM workflows WHERE user_id = $1", user_id)
+    result = []
+    for row in rows:
+        yaml_data = yaml.safe_load(row["yaml_content"])
+        yaml_data["id"] = row["id"]
+        result.append(Workflow(**yaml_data))
+    return result
 
 
 async def update_workflow(workflow_id: str, workflow: Workflow, user_id: str) -> None:
