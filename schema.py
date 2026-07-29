@@ -134,6 +134,9 @@ class Workflow(BaseModel):
     phases: dict[str, Phase]
 
 
+class LoadWorkflowRequest(BaseModel):
+    workflow_id: str
+
 class TransitionRequest(BaseModel):
     session_id: str
     trigger: str

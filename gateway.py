@@ -13,6 +13,7 @@ from schema import (
     Workflow,
     MCPRequest,
     MCPResponse,
+    LoadWorkflowRequest,
     TransitionRequest,
     TransitionResponse,
     RunHistory,
@@ -254,10 +255,10 @@ app = FastAPI()
 
 
 @app.post("/mcp/load_workflow")
-async def mcp_load_workflow(workflow_id: str, api_key: str = Header(...)):
+async def mcp_load_workflow(request: LoadWorkflowRequest, api_key: str = Header(...)):
     user = await authenticate_api_key(api_key)
     plan_limit = PLAN_LIMITS.get(user.plan.value, 200)
-    workflow = await load_workflow(workflow_id)
+    workflow = await load_workflow(request.workflow_id)
     session = await create_session(
         session_id=str(uuid.uuid4()),
         workflow=workflow,
