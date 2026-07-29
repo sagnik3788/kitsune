@@ -192,14 +192,16 @@ async def load_workflow(workflow_id: str) -> Workflow:
 async def handle_tool_call(session_id: str, tool: str, args: dict, workflow: Workflow, user_id: str):
     session = await get_session(session_id)
 
-
-    increment_turn(session)
-    increment_counter(session, tool)
-    if "file" in args:
-        record_file(session, args["file"])
-
     context = build_context(session, tool, args)
     result = check(session.current_phase, tool, workflow, context)
+
+    # Only increment counters for allowed tools
+    if result["allowed"]:
+        increment_turn(session)
+        increment_counter(session, tool)
+        if "file" in args:
+            record_file(session, args["file"])
+
     await save_session(session)
 
     # LOG TO TURSO (both allowed and blocked)
