@@ -7,7 +7,9 @@
       <nav class="border-b border-[#2e2e35] px-6 py-3">
         <div class="max-w-5xl mx-auto flex items-center justify-between">
           <router-link to="/" class="font-bold text-lg text-gray-100">Kitsune</router-link>
-          <div class="flex items-center gap-6 text-sm">
+          
+          <!-- Desktop nav -->
+          <div class="hidden md:flex items-center gap-6 text-sm">
             <template v-if="isSignedIn">
               <span v-if="sessionLoading" class="text-gray-500 text-xs">Loading session...</span>
               <template v-else>
@@ -21,6 +23,66 @@
             </template>
             <template v-else>
               <router-link to="/auth" class="text-gray-500 hover:text-gray-100" active-class="text-amber-500 font-medium">Sign In</router-link>
+            </template>
+          </div>
+          
+          <!-- Mobile hamburger -->
+          <button 
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            class="md:hidden text-gray-400 hover:text-gray-100 p-2"
+          >
+            <svg v-if="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Mobile menu dropdown -->
+        <div 
+          v-if="mobileMenuOpen" 
+          class="md:hidden mt-3 pb-3 border-t border-[#2e2e35] pt-3"
+        >
+          <div class="flex flex-col gap-3 text-sm">
+            <template v-if="isSignedIn">
+              <span v-if="sessionLoading" class="text-gray-500 text-xs">Loading session...</span>
+              <template v-else>
+                <router-link 
+                  to="/workflows" 
+                  @click="mobileMenuOpen = false"
+                  class="text-gray-500 hover:text-gray-100 py-2" 
+                  active-class="text-amber-500 font-medium"
+                >Workflows</router-link>
+                <router-link 
+                  to="/runs" 
+                  @click="mobileMenuOpen = false"
+                  class="text-gray-500 hover:text-gray-100 py-2" 
+                  active-class="text-amber-500 font-medium"
+                >Runs</router-link>
+                <router-link 
+                  to="/keys" 
+                  @click="mobileMenuOpen = false"
+                  class="text-gray-500 hover:text-gray-100 py-2" 
+                  active-class="text-amber-500 font-medium"
+                >API Keys</router-link>
+                <router-link 
+                  to="/plugin" 
+                  @click="mobileMenuOpen = false"
+                  class="text-gray-500 hover:text-gray-100 py-2" 
+                  active-class="text-amber-500 font-medium"
+                >Plugin</router-link>
+              </template>
+              <button @click="signOutMobile" class="text-left text-gray-500 hover:text-red-400 transition-colors py-2">Sign Out</button>
+            </template>
+            <template v-else>
+              <router-link 
+                to="/auth" 
+                @click="mobileMenuOpen = false"
+                class="text-gray-500 hover:text-gray-100 py-2" 
+                active-class="text-amber-500 font-medium"
+              >Sign In</router-link>
             </template>
           </div>
         </div>
@@ -45,10 +107,16 @@ const router = useRouter()
 const isSignedIn = ref(false)
 const sessionLoading = ref(false)
 const isHomePage = computed(() => router.currentRoute.value.path === '/')
+const mobileMenuOpen = ref(false)
 
 async function signOut() {
   if (!clerk) return
   await clerk.signOut()
+}
+
+async function signOutMobile() {
+  mobileMenuOpen.value = false
+  await signOut()
 }
 
 async function ensureSessionReady() {
