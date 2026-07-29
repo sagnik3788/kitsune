@@ -27,8 +27,8 @@ interface KitsuneTransitionResponse {
 }
 
 const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-ai.duckdns.org"
-const API_KEY = process.env.KITSUNE_API_KEY || "sk_93d86369048447828aa7067e52037330"
-const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW || "bugfix"
+const API_KEY = process.env.KITSUNE_API_KEY
+const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW
 
 let sessionId: string | null = null
 let initError: string | null = null
