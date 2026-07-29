@@ -36,41 +36,53 @@ def check(phase_name, tool, workflow, context):
     phase = workflow.phases[phase_name]
 
     if tool not in phase.tools:
+        transitions = list(phase.on.keys())
+        transition_hint = ""
+        if transitions:
+            transition_hint = f"\nTo advance: call kitsune_transition with trigger: {', '.join(transitions)}"
         return {
             "allowed": False,
             "reason": f"Tool '{tool}' not available in phase '{phase_name}'",
             "current_phase": phase_name,
             "next_phase": None,
             "available_tools": phase.tools,
-            "available_transitions": list(phase.on.keys()),
-            "message": f"🦊 [Kitsune] Tool '{tool}' not available in phase '{phase_name}'",
+            "available_transitions": transitions,
+            "message": f"🦊 [Kitsune] Tool '{tool}' not available in phase '{phase_name}'. Allowed: {', '.join(phase.tools)}.{transition_hint}",
         }
 
     # for each guards means like turn_count or max_count check that compare to session context does it allow or block using
     # eval_guard
     for guard in phase.guards:
        if not eval_guard(guard, context):
+            transitions = list(phase.on.keys())
+            transition_hint = ""
+            if transitions:
+                transition_hint = f"\nTo advance: call kitsune_transition with trigger: {', '.join(transitions)}"
             return {
                 "allowed": False,
                 "reason": guard.message or f"Guard failed: {guard.field} {guard.op.value} {guard.value}",
                 "current_phase": phase_name,
                 "next_phase": None,
                 "available_tools": phase.tools,
-                "available_transitions": list(phase.on.keys()),
-                "message": f"🦊 [Kitsune] {guard.message or f'Guard failed: {guard.field} {guard.op.value} {guard.value}'}",
+                "available_transitions": transitions,
+                "message": f"🦊 [Kitsune] {guard.message or f'Guard failed: {guard.field} {guard.op.value} {guard.value}'}.{transition_hint}",
             }
 
     # for specific tool only
     for guard in phase.tool_guards.get(tool, []):
        if not  eval_guard(guard, context):
+            transitions = list(phase.on.keys())
+            transition_hint = ""
+            if transitions:
+                transition_hint = f"\nTo advance: call kitsune_transition with trigger: {', '.join(transitions)}"
             return {
                 "allowed": False,
                 "reason": guard.message or f"Guard failed: {guard.field} {guard.op.value} {guard.value}",
                 "current_phase": phase_name,
                 "next_phase": None,
                 "available_tools": phase.tools,
-                "available_transitions": list(phase.on.keys()),
-                "message": f"🦊 [Kitsune] {guard.message or f'Guard failed: {guard.field} {guard.op.value} {guard.value}'}",
+                "available_transitions": transitions,
+                "message": f"🦊 [Kitsune] {guard.message or f'Guard failed: {guard.field} {guard.op.value} {guard.value}'}.{transition_hint}",
             }
 
     return {
