@@ -11,7 +11,10 @@ def eval_guard(guard, context):
         return field_value is None
 
     if field_value is None:
-        return False
+        if guard.op in (GuardOp.less_than, GuardOp.less_than_equal, GuardOp.greater_than, GuardOp.greater_than_equal, GuardOp.equal, GuardOp.not_equal):
+            field_value = 0
+        else:
+            return False
 
     if guard.op == GuardOp.equal:
         return field_value == guard.value
