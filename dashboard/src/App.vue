@@ -14,6 +14,7 @@
                 <router-link to="/workflows" class="text-gray-500 hover:text-gray-100" active-class="text-amber-500 font-medium">Workflows</router-link>
                 <router-link to="/runs" class="text-gray-500 hover:text-gray-100" active-class="text-amber-500 font-medium">Runs</router-link>
                 <router-link to="/keys" class="text-gray-500 hover:text-gray-100" active-class="text-amber-500 font-medium">API Keys</router-link>
+                <router-link to="/plugin" class="text-gray-500 hover:text-gray-100" active-class="text-amber-500 font-medium">Plugin</router-link>
               </template>
               <button @click="signOut" class="text-gray-500 hover:text-red-400 transition-colors">Sign Out</button>
               <div id="clerk-user-button" class="ml-2"></div>

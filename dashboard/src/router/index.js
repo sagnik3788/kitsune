@@ -9,6 +9,7 @@ const router = createRouter({
     { path: '/workflows/:id', component: () => import('../views/WorkflowEditor.vue'), meta: { requiresAuth: true } },
     { path: '/runs', component: () => import('../views/WorkflowRuns.vue'), meta: { requiresAuth: true } },
     { path: '/keys', component: () => import('../views/ApiKeys.vue'), meta: { requiresAuth: true } },
+    { path: '/plugin', component: () => import('../views/PluginPage.vue'), meta: { requiresAuth: true } },
   ],
 })
 
