@@ -38,7 +38,7 @@ class Guard(BaseModel):
 
 class MCPRequest(BaseModel):
     session_id: str
-    tool: str
+    tool: Optional[str] = None
     args: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -128,6 +128,7 @@ class Phase(BaseModel):
 
 class Workflow(BaseModel):
     id: str
+    name: Optional[str] = None
     description: Optional[str] = None
     initial: str
     phases: dict[str, Phase]

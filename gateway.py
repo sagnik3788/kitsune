@@ -289,7 +289,7 @@ async def mcp_transition(request: TransitionRequest, api_key: str = Header(...))
 
 @app.post("/mcp/get_state")
 async def mcp_get_state(request: MCPRequest, api_key: str = Header(...)):
-    #user = await authenticate_api_key(api_key)
+    user = await authenticate_api_key(api_key)
     session = await get_session(request.session_id)
     workflow = await load_workflow(session.workflow_id)
     phase = workflow.phases[session.current_phase]

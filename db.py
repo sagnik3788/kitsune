@@ -183,7 +183,7 @@ async def create_workflow(workflow: Workflow, user_id: str, is_template: bool = 
     pool = await get_pool()
     await pool.execute(
         "INSERT INTO workflows (id, user_id, yaml_content, name, description, is_template, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-        workflow.id, user_id, yaml_content, workflow.id, workflow.description, is_template, now, now,
+        workflow.id, user_id, yaml_content, workflow.name or workflow.id, workflow.description, is_template, now, now,
     )
 
 
@@ -212,11 +212,12 @@ async def get_workflow_for_user(workflow_id: str, user_id: str) -> Optional[Work
 
 async def list_workflows(user_id: str) -> list[Workflow]:
     pool = await get_pool()
-    rows = await pool.fetch("SELECT id, yaml_content FROM workflows WHERE user_id = $1", user_id)
+    rows = await pool.fetch("SELECT id, name, yaml_content FROM workflows WHERE user_id = $1", user_id)
     result = []
     for row in rows:
         yaml_data = yaml.safe_load(row["yaml_content"])
         yaml_data["id"] = row["id"]
+        yaml_data["name"] = row["name"]
         result.append(Workflow(**yaml_data))
     return result
 
@@ -227,7 +228,7 @@ async def update_workflow(workflow_id: str, workflow: Workflow, user_id: str) ->
     pool = await get_pool()
     await pool.execute(
         "UPDATE workflows SET yaml_content = $1, name = $2, description = $3, updated_at = $4 WHERE id = $5 AND user_id = $6",
-        yaml_content, workflow.id, workflow.description, now, workflow_id, user_id,
+        yaml_content, workflow.name or workflow.id, workflow.description, now, workflow_id, user_id,
     )
 
 async def delete_workflow(workflow_id: str, user_id: str) -> None:
