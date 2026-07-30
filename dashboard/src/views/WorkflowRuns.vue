@@ -49,23 +49,26 @@
         <div
           v-for="session in filteredSessions"
           :key="session.session_id"
-          class="bg-[#131318] border border-[#2e2e35] rounded-lg overflow-hidden cursor-pointer transition-colors hover:border-[#3e3e45]"
-          @click="toggleSession(session.session_id)"
+          class="bg-[#131318] border border-[#2e2e35] rounded-lg overflow-hidden cursor-pointer transition-colors hover:bg-[#1a1a1f] hover:border-[#3e3e45] group"
+          @click="$router.push('/runs/' + session.session_id)"
         >
           <!-- Card body -->
           <div class="p-4">
             <!-- Session ID with copy -->
-            <div class="flex items-center justify-between mb-3 group">
+            <div class="flex items-center justify-between mb-3">
               <span class="font-mono text-sm text-gray-300">
                 {{ truncateSessionId(session.session_id) }}
               </span>
-              <button
-                @click.stop="copyToClipboard(session.session_id)"
-                class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-amber-500 transition-opacity text-xs"
-                title="Copy full session ID"
-              >
-                Copy
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  @click.stop="copyToClipboard(session.session_id)"
+                  class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-amber-500 transition-opacity text-xs"
+                  title="Copy full session ID"
+                >
+                  Copy
+                </button>
+                <span class="text-gray-600 text-sm group-hover:text-amber-500 transition-colors">&rarr;</span>
+              </div>
             </div>
 
             <!-- Last active -->
@@ -92,96 +95,6 @@
               {{ session.latest_phase || 'unknown' }}
             </span>
           </div>
-
-          <!-- Expanded timeline -->
-          <div
-            v-if="expandedSessionId === session.session_id"
-            class="border-t border-[#2e2e35] bg-[#0f0f13]"
-            @click.stop
-          >
-            <div class="p-4">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-gray-300">Run Timeline</h3>
-                <button
-                  @click="collapseSession"
-                  class="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  Collapse
-                </button>
-              </div>
-
-              <!-- Loading runs -->
-              <div v-if="loadingRuns" class="text-gray-500 text-xs py-4">
-                Loading runs...
-              </div>
-
-              <!-- No runs -->
-              <div v-else-if="runs.length === 0" class="text-gray-500 text-xs py-4">
-                No tool calls recorded for this session.
-              </div>
-
-              <!-- Timeline -->
-              <div v-else class="relative pl-6">
-                <!-- Vertical line -->
-                <div class="absolute left-3 top-2 bottom-2 w-px bg-[#2e2e35]"></div>
-
-                <div
-                  v-for="(run, index) in runs"
-                  :key="run.id || (run.session_id + ':' + run.timestamp + ':' + index)"
-                  class="relative mb-4 last:mb-0"
-                >
-                  <!-- Dot -->
-                  <div
-                    class="absolute left-3 top-1.5 -translate-x-1/2 w-2 h-2 rounded-full border border-[#0f0f13]"
-                    :class="resultDotClass(run.result)"
-                  ></div>
-
-                  <div class="flex flex-wrap items-center gap-2 mb-1">
-                    <!-- Result badge -->
-                    <span
-                      class="text-xs px-1.5 py-0.5 rounded font-semibold border"
-                      :class="resultBadgeClass(run.result)"
-                    >
-                      {{ run.result || '—' }}
-                    </span>
-
-                    <!-- Phase -->
-                    <span class="text-xs text-gray-500 font-mono">{{ run.phase || '—' }}</span>
-
-                    <!-- Arrow -->
-                    <span class="text-gray-600 text-xs">&rarr;</span>
-
-                    <!-- Tool or transition -->
-                    <span
-                      v-if="run.result === 'transitioned'"
-                      class="text-xs font-mono font-semibold text-blue-400"
-                    >
-                      {{ run.trigger || '—' }}{{ run.next_phase ? ' → ' + run.next_phase : '' }}
-                    </span>
-                    <span
-                      v-else
-                      class="text-xs text-amber-500 font-mono font-semibold"
-                    >
-                      {{ run.tool || '—' }}
-                    </span>
-
-                    <!-- Timestamp -->
-                    <span class="text-xs text-gray-600 ml-auto">
-                      {{ formatDate(run.timestamp) }}
-                    </span>
-                  </div>
-
-                  <!-- Reason -->
-                  <p
-                    v-if="run.reason"
-                    class="text-xs text-gray-500 italic bg-[#131318] rounded px-2 py-1.5 border border-[#2e2e35] mt-1"
-                  >
-                    {{ run.reason }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -196,12 +109,9 @@ export default {
     const api = inject('api')
 
     const sessions = ref([])
-    const runs = ref([])
     const loadingSessions = ref(false)
-    const loadingRuns = ref(false)
     const error = ref('')
     const searchQuery = ref('')
-    const expandedSessionId = ref(null)
 
     const filteredSessions = computed(() => {
       if (!searchQuery.value.trim()) return sessions.value
@@ -219,31 +129,6 @@ export default {
       }
       loadingSessions.value = false
     })
-
-    async function toggleSession(sessionId) {
-      if (expandedSessionId.value === sessionId) {
-        expandedSessionId.value = null
-        runs.value = []
-        return
-      }
-      expandedSessionId.value = sessionId
-      runs.value = []
-      loadingRuns.value = true
-      error.value = ''
-      try {
-        runs.value = await api.getRuns(sessionId)
-      } catch (e) {
-        console.error('Failed to fetch runs:', e)
-        error.value = e.message || 'Failed to load runs'
-        runs.value = []
-      }
-      loadingRuns.value = false
-    }
-
-    function collapseSession() {
-      expandedSessionId.value = null
-      runs.value = []
-    }
 
     function truncateSessionId(id) {
       if (!id) return '—'
@@ -280,20 +165,6 @@ export default {
       return 'bg-[#2e2e35] text-gray-500 border-[#3e3e45]'
     }
 
-    function resultBadgeClass(result) {
-      if (result === 'allowed') return 'bg-green-500/10 text-green-500 border-green-500/20'
-      if (result === 'blocked') return 'bg-red-500/10 text-red-500 border-red-500/20'
-      if (result === 'transitioned') return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-      return 'bg-[#2e2e35] text-gray-500 border-[#3e3e45]'
-    }
-
-    function resultDotClass(result) {
-      if (result === 'allowed') return 'bg-green-500'
-      if (result === 'blocked') return 'bg-red-500'
-      if (result === 'transitioned') return 'bg-blue-500'
-      return 'bg-gray-500'
-    }
-
     function formatDate(d) {
       if (!d) return ''
       return new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -301,21 +172,14 @@ export default {
 
     return {
       sessions,
-      runs,
       loadingSessions,
-      loadingRuns,
       error,
       searchQuery,
-      expandedSessionId,
       filteredSessions,
-      toggleSession,
-      collapseSession,
       truncateSessionId,
       copyToClipboard,
       timeAgo,
       phaseBadgeClass,
-      resultBadgeClass,
-      resultDotClass,
       formatDate,
     }
   }
