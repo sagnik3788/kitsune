@@ -177,7 +177,7 @@ export const KitsunePlugin: Plugin = async ({ client }) => {
 
       const result = await kitsuneRequest<KitsuneCheckResponse>("check", {
         session_id: sessionId,
-        tool: input.tool,
+        tool: input.tool.toLowerCase(),
         args: output.args,
       })
 
@@ -193,20 +193,6 @@ export const KitsunePlugin: Plugin = async ({ client }) => {
       }
 
       console.log(`[kitsune] ${result.message}`)
-    },
-
-    "tool.execute.after": async (
-      input: { tool: string; sessionID: string; callID: string; args: any },
-      output: { title: string; output: string; metadata: any }
-    ) => {
-      if (!sessionId) return
-
-      const state = await kitsuneRequest<KitsuneState>("get_state", {
-        session_id: sessionId,
-      })
-      if (!state) return
-
-      console.log(`[kitsune] Phase: ${state.current_phase} | Available: ${state.available_tools.join(", ")} | Transitions: ${state.available_transitions.join(", ") || "none"}`)
     },
   }
 }
