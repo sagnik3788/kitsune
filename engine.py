@@ -38,7 +38,10 @@ def eval_guard(guard, context):
 def check(phase_name, tool, workflow, context):
     phase = workflow.phases[phase_name]
 
-    if tool not in phase.tools:
+    tool_key = tool.lower()
+    phase_tools_lower = [t.lower() for t in phase.tools]
+
+    if tool_key not in phase_tools_lower:
         transitions = list(phase.on.keys())
         transition_hint = ""
         if transitions:
@@ -72,7 +75,8 @@ def check(phase_name, tool, workflow, context):
             }
 
     # for specific tool only
-    for guard in phase.tool_guards.get(tool, []):
+    matched_tool_key = next((k for k in phase.tool_guards.keys() if k.lower() == tool_key), None)
+    for guard in (phase.tool_guards.get(matched_tool_key, []) if matched_tool_key else []):
        if not  eval_guard(guard, context):
             transitions = list(phase.on.keys())
             transition_hint = ""
