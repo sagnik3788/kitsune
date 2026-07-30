@@ -111,72 +111,95 @@
         <div class="bg-[#131318] border border-[#2e2e35] rounded-lg p-6">
           <h2 class="text-sm font-semibold text-gray-300 mb-6">Run Timeline</h2>
 
-          <div class="relative pl-6">
-            <!-- Vertical line -->
-            <div class="absolute left-3 top-2 bottom-2 w-px bg-[#2e2e35]"></div>
-
+          <div class="space-y-1">
             <div
               v-for="(run, index) in runs"
               :key="run.id || (run.session_id + ':' + run.timestamp + ':' + index)"
-              class="relative mb-5 last:mb-0"
             >
               <!-- Phase change header -->
               <div
                 v-if="index === 0 || run.phase !== runs[index - 1].phase"
-                class="flex items-center gap-3 mb-2 -ml-6"
+                class="flex items-center gap-3 mb-3 mt-6 first:mt-0"
               >
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ run.phase }}</span>
                 <div class="flex-1 h-px bg-[#2e2e35]"></div>
               </div>
 
-              <!-- Dot -->
-              <div
-                class="absolute left-3 top-6 -translate-x-1/2 w-2.5 h-2.5 rounded-full border-2 border-[#0f0f13]"
-                :class="resultDotClass(run.result)"
-              ></div>
+              <!-- Timeline row: dot + content -->
+              <div class="flex items-start gap-3 py-2">
+                <!-- Dot + line column -->
+                <div class="flex flex-col items-center self-stretch">
+                  <!-- Top half-line (hidden for first item) -->
+                  <div
+                    v-if="index > 0"
+                    class="w-px flex-1 bg-[#2e2e35] min-h-[8px]"
+                  ></div>
+                  <div
+                    v-else
+                    class="w-px flex-1 min-h-[8px]"
+                  ></div>
+                  <!-- Dot -->
+                  <div
+                    class="w-2.5 h-2.5 rounded-full border-2 border-[#131318] shrink-0"
+                    :class="resultDotClass(run.result)"
+                  ></div>
+                  <!-- Bottom half-line (hidden for last item) -->
+                  <div
+                    v-if="index < runs.length - 1"
+                    class="w-px flex-1 bg-[#2e2e35] min-h-[8px]"
+                  ></div>
+                  <div
+                    v-else
+                    class="w-px flex-1 min-h-[8px]"
+                  ></div>
+                </div>
 
-              <div class="flex flex-wrap items-center gap-2 mb-1">
-                <!-- Result badge -->
-                <span
-                  class="text-xs px-1.5 py-0.5 rounded font-semibold border"
-                  :class="resultBadgeClass(run.result)"
-                >
-                  {{ run.result || '—' }}
-                </span>
+                <!-- Content -->
+                <div class="flex-1 min-w-0 pb-2">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <!-- Result badge -->
+                    <span
+                      class="text-xs px-1.5 py-0.5 rounded font-semibold border"
+                      :class="resultBadgeClass(run.result)"
+                    >
+                      {{ run.result || '—' }}
+                    </span>
 
-                <!-- Phase -->
-                <span class="text-xs text-gray-500 font-mono">{{ run.phase || '—' }}</span>
+                    <!-- Phase -->
+                    <span class="text-xs text-gray-500 font-mono">{{ run.phase || '—' }}</span>
 
-                <!-- Arrow -->
-                <span class="text-gray-600 text-xs">&rarr;</span>
+                    <!-- Arrow -->
+                    <span class="text-gray-600 text-xs">&rarr;</span>
 
-                <!-- Tool or transition -->
-                <span
-                  v-if="run.result === 'transitioned'"
-                  class="text-xs font-mono font-semibold text-blue-400"
-                >
-                  {{ run.trigger || '—' }}{{ run.next_phase ? ' → ' + run.next_phase : '' }}
-                </span>
-                <span
-                  v-else
-                  class="text-xs text-amber-500 font-mono font-semibold"
-                >
-                  {{ run.tool || '—' }}
-                </span>
+                    <!-- Tool or transition -->
+                    <span
+                      v-if="run.result === 'transitioned'"
+                      class="text-xs font-mono font-semibold text-blue-400"
+                    >
+                      {{ run.trigger || '—' }}{{ run.next_phase ? ' → ' + run.next_phase : '' }}
+                    </span>
+                    <span
+                      v-else
+                      class="text-xs text-amber-500 font-mono font-semibold"
+                    >
+                      {{ run.tool || '—' }}
+                    </span>
 
-                <!-- Timestamp -->
-                <span class="text-xs text-gray-600 ml-auto">
-                  {{ formatDate(run.timestamp) }}
-                </span>
+                    <!-- Timestamp -->
+                    <span class="text-xs text-gray-600 ml-auto">
+                      {{ formatDate(run.timestamp) }}
+                    </span>
+                  </div>
+
+                  <!-- Reason -->
+                  <p
+                    v-if="run.reason"
+                    class="text-xs text-gray-500 italic bg-[#0f0f13] rounded px-3 py-2 border border-[#2e2e35] mt-2"
+                  >
+                    {{ run.reason }}
+                  </p>
+                </div>
               </div>
-
-              <!-- Reason -->
-              <p
-                v-if="run.reason"
-                class="text-xs text-gray-500 italic bg-[#0f0f13] rounded px-3 py-2 border border-[#2e2e35] mt-1"
-              >
-                {{ run.reason }}
-              </p>
             </div>
           </div>
         </div>
