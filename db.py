@@ -255,6 +255,27 @@ async def get_run_history(session_id: str) -> list[RunHistory]:
     return [RunHistory(**dict(row)) for row in rows]
 
 
+async def list_recent_sessions(user_id: str, limit: int = 20) -> list[dict]:
+    pool = await get_pool()
+    rows = await pool.fetch("""
+        SELECT
+            session_id,
+            MAX(timestamp) as last_active,
+            COUNT(*) as total_calls,
+            COUNT(*) FILTER (WHERE result = 'blocked') as blocked_calls,
+            COUNT(*) FILTER (WHERE result = 'transitioned') as transitions,
+            (SELECT phase FROM run_history r2
+             WHERE r2.session_id = run_history.session_id
+             ORDER BY timestamp DESC LIMIT 1) as latest_phase
+        FROM run_history
+        WHERE user_id = $1
+        GROUP BY session_id
+        ORDER BY last_active DESC
+        LIMIT $2
+    """, user_id, limit)
+    return [dict(row) for row in rows]
+
+
 #  Usage operations
 
 async def get_usage(user_id: str, month: str) -> Optional[Usage]:

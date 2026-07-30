@@ -158,6 +158,10 @@ const api = {
     const data = await request('GET', '/runs?session_id=' + encodeURIComponent(sessionId))
     return data.runs || []
   },
+  async getSessions(limit = 20) {
+    const data = await request('GET', '/sessions?limit=' + encodeURIComponent(limit))
+    return data.sessions || []
+  },
   async getKeys() {
     const data = await request('GET', '/keys')
     return data.keys || []

@@ -33,6 +33,7 @@ from db import (
     update_workflow as db_update_workflow,
     delete_workflow as db_delete_workflow,
     get_run_history as db_get_run_history,
+    list_recent_sessions as db_list_recent_sessions,
     create_api_key as db_create_api_key,
     list_api_keys as db_list_api_keys,
     delete_api_key as db_delete_api_key,
@@ -362,6 +363,12 @@ async def api_get_runs(session_id: str, req: Request):
     user = await authenticate(req)
     runs = await db_get_run_history(session_id)
     return {"runs": [r.model_dump() for r in runs]}
+
+@app.get("/api/sessions")
+async def api_get_sessions(req: Request, limit: int = 20):
+    user = await authenticate(req)
+    sessions = await db_list_recent_sessions(user.id, limit)
+    return {"sessions": sessions}
 
 @app.get("/api/keys")
 async def api_list_keys(req: Request):
