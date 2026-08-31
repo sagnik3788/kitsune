@@ -26,6 +26,7 @@ from db import (
     get_workflow as db_get_workflow,
     get_workflow_for_user as db_get_workflow_for_user,
     get_user_by_api_key,
+    get_user_by_email,
     log_run_history,
     increment_usage,
     list_workflows as db_list_workflows,
@@ -164,10 +165,36 @@ async def authenticate(request: Request):
             try:
                 await create_user(user)
             except Exception as ce:
+                # Handle duplicate-email race: Postgres unique constraint
+                # users_email_key rejects the insert when another concurrent
+                # request already created a user with the same email but a
+                # different id. Preserve existing record and return it.
+                msg = str(ce).lower()
+                is_dup_email = "users_email_key" in msg or ("duplicate" in msg and "email" in msg)
+                if is_dup_email and user_email:
+                    existing = await get_user_by_email(user_email)
+                    if existing:
+                        return existing
+                    # Fallback: try by id in case the duplicate was on id
+                    existing_by_id = await get_user_by_id(user_id)
+                    if existing_by_id:
+                        return existing_by_id
                 import traceback
                 print(f"[AUTH] Failed to create user in DB: {ce}")
                 traceback.print_exc()
                 raise HTTPException(status_code=500, detail=f"Failed to create user: {str(ce)}")
+
+            # create_user is idempotent and may have swallowed a
+            # duplicate-email UniqueViolationError (db.py). In that case the
+            # User with `user_id` was not persisted; return the preserved
+            # existing record by email instead of a phantom user.
+            persisted = await get_user_by_id(user_id)
+            if persisted:
+                return persisted
+            if user_email:
+                existing = await get_user_by_email(user_email)
+                if existing:
+                    return existing
 
         return user
     except HTTPException:
@@ -451,7 +478,16 @@ async def clerk_webhook(request: Request):
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
-        await create_user(user)
+        try:
+            await create_user(user)
+        except Exception as ce:
+            msg = str(ce).lower()
+            is_dup_email = "users_email_key" in msg or ("duplicate" in msg and "email" in msg)
+            if is_dup_email and email:
+                existing = await get_user_by_email(email)
+                if existing:
+                    return {"ok": True, "event": "user.created", "user_id": existing.id, "deduplicated": True}
+            raise
         return {"ok": True, "event": "user.created", "user_id": user_id}
 
     elif event_type == "user.updated":

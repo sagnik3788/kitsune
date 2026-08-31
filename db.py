@@ -100,18 +100,42 @@ async def init_db() -> None:
 
 # User operations
 
+async def get_user_by_email(email: str) -> Optional[User]:
+    if not email:
+        return None
+    pool = await get_pool()
+    row = await pool.fetchrow("SELECT * FROM users WHERE email = $1", email)
+    return User(**dict(row)) if row else None
+
+
 async def create_user(user: User) -> None:
     pool = await get_pool()
-    await pool.execute(
-        """INSERT INTO users (id, email, plan, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5)
-           ON CONFLICT (id) DO UPDATE SET
-             email = EXCLUDED.email,
-             plan = EXCLUDED.plan,
-             updated_at = EXCLUDED.updated_at""",
-        user.id, user.email, user.plan.value,
-        user.created_at, user.updated_at,
-    )
+    try:
+        await pool.execute(
+            """INSERT INTO users (id, email, plan, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5)
+               ON CONFLICT (id) DO UPDATE SET
+                 email = EXCLUDED.email,
+                 plan = EXCLUDED.plan,
+                 updated_at = EXCLUDED.updated_at""",
+            user.id, user.email, user.plan.value,
+            user.created_at, user.updated_at,
+        )
+    except asyncpg.exceptions.UniqueViolationError as e:
+        # Preserve existing record when Postgres email unique constraint
+        # (users_email_key) rejects a duplicate email. This handles races
+        # where two concurrent inserts for the same email arrive with
+        # different ids – without this, callers see a 500.
+        msg = str(e)
+        if "users_email_key" in msg or "email" in msg.lower():
+            return
+        raise
+    except asyncpg.exceptions.PostgresError as e:
+        # Fallback for drivers that surface the constraint differently
+        msg = str(e)
+        if "users_email_key" in msg or "duplicate key" in msg.lower() and "email" in msg.lower():
+            return
+        raise
 
 
 async def update_user(user: User) -> None:
