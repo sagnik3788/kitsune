@@ -86,6 +86,12 @@
         <code class="text-gray-300">opencode "fix the bug in auth.py"</code>
       </div>
 
+      <p class="text-gray-400 mt-6 mb-2">Example — fix a failing test:</p>
+
+      <div class="bg-[#0f0f13] rounded-lg p-4 font-mono text-sm">
+        <code class="text-gray-300 break-all">opencode "test/test_auth.py has a bug: the session-token expiry check in verify_token() is inverted. Fix it. In the test phase, verify with exactly this command: python3 -m pytest test/test_auth.py -v"</code>
+      </div>
+
       <p class="text-gray-400 mt-4">The plugin will automatically:</p>
       <ul class="mt-2 space-y-2 text-gray-400">
         <li class="flex items-start gap-2">
