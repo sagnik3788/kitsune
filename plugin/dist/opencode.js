@@ -45,9 +45,9 @@ async function initSession() {
         console.warn(`[kitsune] ${initError}`);
         return false;
     }
-    const workflow = listRes.workflows.find((w) => w.name === WORKFLOW_NAME || w.id === WORKFLOW_NAME);
+    const workflow = listRes.workflows.find((w) => w.name === WORKFLOW_NAME || w.id === WORKFLOW_NAME || w.description === WORKFLOW_NAME);
     if (!workflow) {
-        const names = listRes.workflows.map(w => w.name || w.id).join(", ");
+        const names = listRes.workflows.map(w => w.description || w.name || w.id).join(", ");
         initError = `Workflow '${WORKFLOW_NAME}' not found. Available: ${names}`;
         console.warn(`[kitsune] ${initError}`);
         return false;

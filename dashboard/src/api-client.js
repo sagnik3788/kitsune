@@ -87,7 +87,7 @@ function toGateway(internal) {
     phases[phaseName] = normalized
   }
 
-  return { id, description: name, initial: def.initial || '', phases }
+  return { id, name, description: name, initial: def.initial || '', phases }
 }
 
 function fromGateway(gateway) {

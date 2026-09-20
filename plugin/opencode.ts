@@ -74,7 +74,7 @@ async function initSession(): Promise<boolean> {
   }
 
   const listRes = await kitsuneRequest<{
-    workflows: Array<{ id: string; name?: string }>
+    workflows: Array<{ id: string; name?: string; description?: string }>
   }>("list_workflows", undefined, "GET")
 
   if (!listRes) {
@@ -84,11 +84,11 @@ async function initSession(): Promise<boolean> {
   }
 
   const workflow = listRes.workflows.find(
-    (w) => w.name === WORKFLOW_NAME || w.id === WORKFLOW_NAME
+    (w) => w.name === WORKFLOW_NAME || w.id === WORKFLOW_NAME || w.description === WORKFLOW_NAME
   )
 
   if (!workflow) {
-    const names = listRes.workflows.map(w => w.name || w.id).join(", ")
+    const names = listRes.workflows.map(w => w.description || w.name || w.id).join(", ")
     initError = `Workflow '${WORKFLOW_NAME}' not found. Available: ${names}`
     console.warn(`[kitsune] ${initError}`)
     return false
