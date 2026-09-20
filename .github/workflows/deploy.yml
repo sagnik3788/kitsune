@@ -1,31 +1,33 @@
-name: Deploy to  vm
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Azure VM
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: azureuser
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd ~/kitsune
-            git pull origin main
-            # Build new image while old container is still running
-            sudo docker build \
-              --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
-              -t kitsune .
-            # Quick restart: downtime ~2-5 seconds
-            sudo docker stop kitsune-app || true
-            sudo docker rm kitsune-app || true
-            sudo docker run -d -p 127.0.0.1:8000:8000 --env-file .env --name kitsune-app kitsune
-            # Wait for app to be ready
-            sleep 5
-            curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/
-            echo "Deployed at $(date)"
+# Disabled for now: deployment moved to Render (auto-deploys on push to main).
+# Uncomment the block below to re-enable the Azure VM deploy.
+# name: Deploy to  vm
+#
+# on:
+#   push:
+#     branches: [main]
+#
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Deploy to Azure VM
+#         uses: appleboy/ssh-action@v1.0.0
+#         with:
+#           host: ${{ secrets.VM_HOST }}
+#           username: azureuser
+#           key: ${{ secrets.VM_SSH_KEY }}
+#           script: |
+#             cd ~/kitsune
+#             git pull origin main
+#             # Build new image while old container is still running
+#             sudo docker build \
+#               --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
+#               -t kitsune .
+#             # Quick restart: downtime ~2-5 seconds
+#             sudo docker stop kitsune-app || true
+#             sudo docker rm kitsune-app || true
+#             sudo docker run -d -p 127.0.0.1:8000:8000 --env-file .env --name kitsune-app kitsune
+#             # Wait for app to be ready
+#             sleep 5
+#             curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/
+#             echo "Deployed at $(date)"
