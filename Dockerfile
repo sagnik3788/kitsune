@@ -30,6 +30,9 @@ RUN pip install --no-cache-dir \
 # Copy backend code
 COPY engine.py schema.py db.py gateway.py ./
 
+# Copy built plugin bundle (served at /plugin.js)
+COPY plugin/dist/opencode.js ./plugin/dist/opencode.js
+
 # Copy built frontend from builder
 COPY --from=builder /app/dashboard/dist ./dashboard/dist
 

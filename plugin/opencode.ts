@@ -26,7 +26,7 @@ interface KitsuneTransitionResponse {
   message: string
 }
 
-const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-ai.duckdns.org"
+const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-fofq.onrender.com"
 const API_KEY = process.env.KITSUNE_API_KEY
 const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW
 

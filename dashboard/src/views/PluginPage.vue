@@ -19,7 +19,7 @@
       <p class="text-gray-400 mb-4">One command to install the plugin:</p>
       
       <div class="bg-[#0f0f13] rounded-lg p-4 font-mono text-sm relative group">
-        <code class="text-green-400">curl -L https://kitsune-ai.duckdns.org/plugin.js > ~/.opencode/plugins/kitsune.js</code>
+        <code class="text-green-400">curl -L {{ gatewayUrl }}/plugin.js > ~/.opencode/plugins/kitsune.js</code>
         <button 
           @click="copyCommand"
           class="absolute right-2 top-2 px-3 py-1 bg-[#2e2e35] hover:bg-[#3e3e45] rounded text-xs text-gray-300 transition-colors"
@@ -46,7 +46,7 @@
       <div class="bg-[#0f0f13] rounded-lg p-4 font-mono text-sm relative group mb-4">
         <code class="text-amber-400 block">export KITSUNE_API_KEY={{ apiKey || 'your-api-key-here' }}</code>
         <code class="text-amber-400 block">export KITSUNE_WORKFLOW=bugfix</code>
-        <code class="text-amber-400 block"># Optional: export KITSUNE_GATEWAY_URL=https://kitsune-ai.duckdns.org</code>
+        <code class="text-amber-400 block"># Optional: export KITSUNE_GATEWAY_URL={{ gatewayUrl }}</code>
         <button 
           @click="copyEnv"
           class="absolute right-2 top-2 px-3 py-1 bg-[#2e2e35] hover:bg-[#3e3e45] rounded text-xs text-gray-300 transition-colors"
@@ -134,6 +134,7 @@
 import { ref, onMounted } from 'vue'
 import apiClient from '../api-client'
 
+const gatewayUrl = window.location.origin
 const apiKey = ref('')
 const copied = ref(false)
 const copiedEnv = ref(false)
@@ -150,7 +151,7 @@ async function loadApiKey() {
 }
 
 function copyCommand() {
-  navigator.clipboard.writeText('curl -L https://kitsune-ai.duckdns.org/plugin.js > ~/.opencode/plugins/kitsune.js')
+  navigator.clipboard.writeText(`curl -L ${gatewayUrl}/plugin.js > ~/.opencode/plugins/kitsune.js`)
   copied.value = true
   setTimeout(() => copied.value = false, 2000)
 }
@@ -158,7 +159,7 @@ function copyCommand() {
 function copyEnv() {
   const env = `export KITSUNE_API_KEY=${apiKey.value || 'your-api-key-here'}
 export KITSUNE_WORKFLOW=bugfix
-# Optional: export KITSUNE_GATEWAY_URL=https://kitsune-ai.duckdns.org`
+# Optional: export KITSUNE_GATEWAY_URL=${gatewayUrl}`
   navigator.clipboard.writeText(env)
   copiedEnv.value = true
   setTimeout(() => copiedEnv.value = false, 2000)

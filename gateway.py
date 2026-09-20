@@ -430,6 +430,12 @@ async def serve_dashboard_image():
 async def serve_favicon():
     return FileResponse("dashboard/dist/favicon.svg")
 
+# Single-file plugin bundle for `curl .../plugin.js > ~/.opencode/plugins/kitsune.js`
+# ponytail: serves the committed tsc output, so rebuild plugin/ after editing it
+@app.get("/plugin.js")
+async def serve_plugin():
+    return FileResponse("plugin/dist/opencode.js", media_type="application/javascript")
+
 # SPA fallback: serve index.html for all non-API routes (Vue Router handles client-side routing)
 @app.get("/{full_path:path}")
 async def serve_spa(full_path: str):

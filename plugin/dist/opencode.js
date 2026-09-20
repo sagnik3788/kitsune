@@ -1,5 +1,5 @@
 import { z } from "zod";
-const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-ai.duckdns.org";
+const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-fofq.onrender.com";
 const API_KEY = process.env.KITSUNE_API_KEY;
 const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW;
 let sessionId = null;
@@ -118,7 +118,7 @@ export const KitsunePlugin = async ({ client }) => {
             }
             const result = await kitsuneRequest("check", {
                 session_id: sessionId,
-                tool: input.tool,
+                tool: input.tool.toLowerCase(),
                 args: output.args,
             });
             if (!result) {
@@ -129,16 +129,6 @@ export const KitsunePlugin = async ({ client }) => {
                 throw new Error(`[kitsune] BLOCKED: ${result.reason || "Tool not available"}\n${result.message}`);
             }
             console.log(`[kitsune] ${result.message}`);
-        },
-        "tool.execute.after": async (input, output) => {
-            if (!sessionId)
-                return;
-            const state = await kitsuneRequest("get_state", {
-                session_id: sessionId,
-            });
-            if (!state)
-                return;
-            console.log(`[kitsune] Phase: ${state.current_phase} | Available: ${state.available_tools.join(", ")} | Transitions: ${state.available_transitions.join(", ") || "none"}`);
         },
     };
 };
