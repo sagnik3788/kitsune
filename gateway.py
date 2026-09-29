@@ -9,6 +9,7 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
 from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import Field
 from engine import check, next_phase
 import redis.asyncio as redis
@@ -299,12 +300,54 @@ async def handle_get_state(session_id: str):
     }
 
 
+def _csv_env(name: str, defaults: list[str]) -> list[str]:
+    """Read a comma-separated security setting, retaining safe local defaults."""
+    value = os.getenv(name)
+    if value is None:
+        return defaults
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+public_host = os.getenv("RENDER_EXTERNAL_HOSTNAME", "kitsune-fofq.onrender.com")
+mcp_allowed_hosts = _csv_env(
+    "MCP_ALLOWED_HOSTS",
+    [
+        public_host,
+        f"{public_host}:*",
+        "127.0.0.1",
+        "127.0.0.1:*",
+        "localhost",
+        "localhost:*",
+        "[::1]",
+        "[::1]:*",
+    ],
+)
+mcp_allowed_origins = _csv_env(
+    "MCP_ALLOWED_ORIGINS",
+    [
+        f"https://{public_host}",
+        f"https://{public_host}:*",
+        "http://127.0.0.1",
+        "http://127.0.0.1:*",
+        "http://localhost",
+        "http://localhost:*",
+        "http://[::1]",
+        "http://[::1]:*",
+    ],
+)
+
+
 mcp_server = FastMCP(
     "Kitsune",
     instructions="Enforce Kitsune workflow phases for agent tool calls.",
     stateless_http=True,
     json_response=True,
     streamable_http_path="/",
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=mcp_allowed_hosts,
+        allowed_origins=mcp_allowed_origins,
+    ),
 )
 
 
@@ -315,6 +358,25 @@ def api_key_from_context(ctx: Context) -> str:
     if not api_key:
         raise ValueError("Missing api-key header")
     return api_key
+
+
+@mcp_server.tool(name="kitsune_load_workflow")
+async def kitsune_load_workflow(
+    workflow_id: Annotated[str, Field(description="Workflow identifier to activate")],
+    ctx: Context,
+) -> dict[str, str]:
+    """Create an isolated Kitsune session for a workflow."""
+    user = await authenticate_api_key(api_key_from_context(ctx))
+    plan_limit = PLAN_LIMITS.get(user.plan.value, 200)
+    workflow = await load_workflow(workflow_id)
+    session = await create_session(
+        session_id=str(uuid.uuid4()),
+        workflow=workflow,
+        agent_id=user.id,
+        run_id=str(uuid.uuid4()),
+        plan_limit=plan_limit,
+    )
+    return {"session_id": session.session_id, "current_phase": workflow.initial}
 
 
 @mcp_server.tool(name="kitsune_check_tool")
