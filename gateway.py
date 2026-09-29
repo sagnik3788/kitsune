@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Any
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from mcp.server.fastmcp import Context, FastMCP
 from pydantic import Field
 from engine import check, next_phase
@@ -513,6 +513,12 @@ async def serve_plugin():
 
 # MCP Streamable HTTP transport. Keeping the legacy REST routes above means
 # existing clients can migrate without a flag-day production cutover.
+@app.api_route("/mcp", methods=["GET", "POST", "DELETE"], include_in_schema=False)
+async def mcp_root_redirect(request: Request):
+    """Preserve the HTTP method while normalizing the MCP endpoint slash."""
+    return RedirectResponse(url="/mcp/", status_code=307)
+
+
 app.mount("/mcp", mcp_server.streamable_http_app(), name="mcp")
 
 # SPA fallback: serve index.html for all non-API routes (Vue Router handles client-side routing)
