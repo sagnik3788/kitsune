@@ -4,6 +4,7 @@ const API_KEY = process.env.KITSUNE_API_KEY;
 const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW;
 let sessionId = null;
 let initError = null;
+let openCodeSessionId = null;
 async function kitsuneRequest(endpoint, body, method = "POST") {
     try {
         const url = `${GATEWAY_URL}/mcp/${endpoint}`;
@@ -104,6 +105,13 @@ export const KitsunePlugin = async ({ client }) => {
             }
         },
         "tool.execute.before": async (input, output) => {
+            // OpenCode can start a new conversation without reloading this plugin.
+            // Do not reuse the previous Kitsune session (and its turn counters).
+            if (openCodeSessionId !== input.sessionID) {
+                openCodeSessionId = input.sessionID;
+                sessionId = null;
+                initError = null;
+            }
             if (!sessionId && !initError) {
                 await initSession();
             }

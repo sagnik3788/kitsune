@@ -32,6 +32,7 @@ const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW
 
 let sessionId: string | null = null
 let initError: string | null = null
+let openCodeSessionId: string | null = null
 
 async function kitsuneRequest<T>(
   endpoint: string,
@@ -161,6 +162,13 @@ export const KitsunePlugin: Plugin = async ({ client }) => {
       input: { tool: string; sessionID: string; callID: string },
       output: { args: any }
     ) => {
+      // OpenCode can start a new conversation without reloading this plugin.
+      if (openCodeSessionId !== input.sessionID) {
+        openCodeSessionId = input.sessionID
+        sessionId = null
+        initError = null
+      }
+
       if (!sessionId && !initError) {
         await initSession()
       }
