@@ -80,6 +80,12 @@ async function ensureSession(openCodeSessionId) {
 }
 export const KitsunePlugin = async ({ client }) => {
     return {
+        event: async ({ event }) => {
+            if (event.type === "session.deleted") {
+                // Release the Kitsune state when OpenCode removes the conversation.
+                sessions.delete(event.properties.info.id);
+            }
+        },
         tool: {
             kitsune_transition: {
                 description: "Transition to the next phase in the Kitsune workflow. Call this when you want to advance: READY (plan→implement), DONE (implement→test), PASS (test→done), or FAIL (test→implement or implement→plan).",
