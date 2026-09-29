@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir \
     clerk-backend-api \
     svix \
     asyncpg \
+    "mcp>=1.12,<2" \
     pyyaml \
     pydantic
 

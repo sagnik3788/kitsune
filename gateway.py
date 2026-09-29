@@ -2,10 +2,15 @@ import os
 import hashlib
 import json
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from typing import Annotated, Any
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
+from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
+from pydantic import Field
 from engine import check, next_phase
 import redis.asyncio as redis
 from schema import (
@@ -281,7 +286,145 @@ async def handle_transition(session_id: str, trigger: str, workflow: Workflow, u
     }
 
 
-app = FastAPI()
+async def handle_get_state(session_id: str):
+    """Return the current state for a session."""
+    session = await get_session(session_id)
+    workflow = await load_workflow(session.workflow_id)
+    phase = workflow.phases[session.current_phase]
+    return {
+        "current_phase": session.current_phase,
+        "available_tools": phase.tools,
+        "available_transitions": list(phase.on.keys()),
+        "turn_count": session.turn_count,
+        "counters": session.counters,
+    }
+
+
+def _csv_env(name: str, defaults: list[str]) -> list[str]:
+    """Read a comma-separated security setting, retaining safe local defaults."""
+    value = os.getenv(name)
+    if value is None:
+        return defaults
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+public_host = os.getenv("RENDER_EXTERNAL_HOSTNAME", "kitsune-fofq.onrender.com")
+mcp_allowed_hosts = _csv_env(
+    "MCP_ALLOWED_HOSTS",
+    [
+        public_host,
+        f"{public_host}:*",
+        "127.0.0.1",
+        "127.0.0.1:*",
+        "localhost",
+        "localhost:*",
+        "[::1]",
+        "[::1]:*",
+    ],
+)
+mcp_allowed_origins = _csv_env(
+    "MCP_ALLOWED_ORIGINS",
+    [
+        f"https://{public_host}",
+        f"https://{public_host}:*",
+        "http://127.0.0.1",
+        "http://127.0.0.1:*",
+        "http://localhost",
+        "http://localhost:*",
+        "http://[::1]",
+        "http://[::1]:*",
+    ],
+)
+
+
+mcp_server = FastMCP(
+    "Kitsune",
+    instructions="Enforce Kitsune workflow phases for agent tool calls.",
+    stateless_http=True,
+    json_response=True,
+    streamable_http_path="/",
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=mcp_allowed_hosts,
+        allowed_origins=mcp_allowed_origins,
+    ),
+)
+
+
+def api_key_from_context(ctx: Context) -> str:
+    """Read the existing Kitsune API key from an MCP HTTP request."""
+    request = ctx.request_context.request
+    api_key = request.headers.get("api-key") if request else None
+    if not api_key:
+        raise ValueError("Missing api-key header")
+    return api_key
+
+
+@mcp_server.tool(name="kitsune_load_workflow")
+async def kitsune_load_workflow(
+    workflow_id: Annotated[str, Field(description="Workflow identifier to activate")],
+    ctx: Context,
+) -> dict[str, str]:
+    """Create an isolated Kitsune session for a workflow."""
+    user = await authenticate_api_key(api_key_from_context(ctx))
+    plan_limit = PLAN_LIMITS.get(user.plan.value, 200)
+    workflow = await load_workflow(workflow_id)
+    session = await create_session(
+        session_id=str(uuid.uuid4()),
+        workflow=workflow,
+        agent_id=user.id,
+        run_id=str(uuid.uuid4()),
+        plan_limit=plan_limit,
+    )
+    return {"session_id": session.session_id, "current_phase": workflow.initial}
+
+
+@mcp_server.tool(name="kitsune_check_tool")
+async def kitsune_check_tool(
+    session_id: Annotated[str, Field(description="Kitsune session identifier")],
+    tool: Annotated[str, Field(description="Name of the agent tool being checked")],
+    args: Annotated[
+        dict[str, Any], Field(description="Arguments for the proposed tool call")
+    ],
+    ctx: Context,
+) -> dict[str, Any]:
+    """Check whether a tool call is allowed in the current workflow phase."""
+    user = await authenticate_api_key(api_key_from_context(ctx))
+    session = await get_session(session_id)
+    workflow = await load_workflow(session.workflow_id)
+    return await handle_tool_call(session_id, tool, args, workflow, user.id)
+
+
+@mcp_server.tool(name="kitsune_transition")
+async def kitsune_transition(
+    session_id: Annotated[str, Field(description="Kitsune session identifier")],
+    trigger: Annotated[str, Field(description="Workflow transition trigger")],
+    ctx: Context,
+) -> dict[str, Any]:
+    """Apply a workflow transition trigger to a Kitsune session."""
+    user = await authenticate_api_key(api_key_from_context(ctx))
+    session = await get_session(session_id)
+    workflow = await load_workflow(session.workflow_id)
+    return await handle_transition(session_id, trigger, workflow, user.id)
+
+
+@mcp_server.tool(name="kitsune_get_state")
+async def kitsune_get_state(
+    session_id: Annotated[str, Field(description="Kitsune session identifier")],
+    ctx: Context,
+) -> dict[str, Any]:
+    """Get the current phase, counters, tools, and transitions for a session."""
+    await authenticate_api_key(api_key_from_context(ctx))
+    return await handle_get_state(session_id)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    async with mcp_server.session_manager.run():
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/mcp/load_workflow")
@@ -299,7 +442,8 @@ async def mcp_load_workflow(request: LoadWorkflowRequest, api_key: str = Header(
     return {"session_id": session.session_id, "current_phase": workflow.initial}
 
 
-@app.post("/mcp/check")
+@app.post("/mcp/check", deprecated=True, include_in_schema=False)
+@app.post("/internal/mcp/check", deprecated=True)
 async def mcp_check(request: MCPRequest, api_key: str = Header(...)):
     user = await authenticate_api_key(api_key)
     session = await get_session(request.session_id)
@@ -309,7 +453,8 @@ async def mcp_check(request: MCPRequest, api_key: str = Header(...)):
     )
     return MCPResponse(**result)
 
-@app.post("/mcp/transition")
+@app.post("/mcp/transition", deprecated=True, include_in_schema=False)
+@app.post("/internal/mcp/transition", deprecated=True)
 async def mcp_transition(request: TransitionRequest, api_key: str = Header(...)):
     user = await authenticate_api_key(api_key)
     session = await get_session(request.session_id)
@@ -318,19 +463,11 @@ async def mcp_transition(request: TransitionRequest, api_key: str = Header(...))
     return TransitionResponse(**result)
 
 
-@app.post("/mcp/get_state")
+@app.post("/mcp/get_state", deprecated=True, include_in_schema=False)
+@app.post("/internal/mcp/get_state", deprecated=True)
 async def mcp_get_state(request: MCPRequest, api_key: str = Header(...)):
-    user = await authenticate_api_key(api_key)
-    session = await get_session(request.session_id)
-    workflow = await load_workflow(session.workflow_id)
-    phase = workflow.phases[session.current_phase]
-    return {
-        "current_phase": session.current_phase,
-        "available_tools": phase.tools,
-        "available_transitions": list(phase.on.keys()),
-        "turn_count": session.turn_count,
-        "counters": session.counters,
-    }
+    await authenticate_api_key(api_key)
+    return await handle_get_state(request.session_id)
 
 
 @app.get("/mcp/list_workflows")
@@ -435,6 +572,16 @@ async def serve_favicon():
 @app.get("/plugin.js")
 async def serve_plugin():
     return FileResponse("plugin/dist/opencode.js", media_type="application/javascript")
+
+# MCP Streamable HTTP transport. Keeping the legacy REST routes above means
+# existing clients can migrate without a flag-day production cutover.
+@app.api_route("/mcp", methods=["GET", "POST", "DELETE"], include_in_schema=False)
+async def mcp_root_redirect(request: Request):
+    """Preserve the HTTP method while normalizing the MCP endpoint slash."""
+    return RedirectResponse(url="/mcp/", status_code=307)
+
+
+app.mount("/mcp", mcp_server.streamable_http_app(), name="mcp")
 
 # SPA fallback: serve index.html for all non-API routes (Vue Router handles client-side routing)
 @app.get("/{full_path:path}")
