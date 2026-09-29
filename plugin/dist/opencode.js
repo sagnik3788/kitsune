@@ -2,8 +2,15 @@ import { z } from "zod";
 const GATEWAY_URL = process.env.KITSUNE_GATEWAY_URL || "https://kitsune-fofq.onrender.com";
 const API_KEY = process.env.KITSUNE_API_KEY;
 const WORKFLOW_NAME = process.env.KITSUNE_WORKFLOW;
-let sessionId = null;
-let initError = null;
+const sessions = new Map();
+function getSessionState(openCodeSessionId) {
+    let state = sessions.get(openCodeSessionId);
+    if (!state) {
+        state = { kitsuneSessionId: null, initError: null };
+        sessions.set(openCodeSessionId, state);
+    }
+    return state;
+}
 async function kitsuneRequest(endpoint, body, method = "POST") {
     try {
         const url = `${GATEWAY_URL}/mcp/${endpoint}`;
@@ -33,37 +40,52 @@ async function kitsuneRequest(endpoint, body, method = "POST") {
         return null;
     }
 }
-async function initSession() {
+async function initSession(state) {
     if (!API_KEY || !WORKFLOW_NAME) {
-        initError = "KITSUNE_API_KEY or KITSUNE_WORKFLOW not set";
-        console.warn(`[kitsune] ${initError}`);
-        return false;
+        state.initError = "KITSUNE_API_KEY or KITSUNE_WORKFLOW not set";
+        console.warn(`[kitsune] ${state.initError}`);
+        return;
     }
     const listRes = await kitsuneRequest("list_workflows", undefined, "GET");
     if (!listRes) {
-        initError = "Failed to list workflows";
-        console.warn(`[kitsune] ${initError}`);
-        return false;
+        state.initError = "Failed to list workflows";
+        console.warn(`[kitsune] ${state.initError}`);
+        return;
     }
     const workflow = listRes.workflows.find((w) => w.name === WORKFLOW_NAME || w.id === WORKFLOW_NAME || w.description === WORKFLOW_NAME);
     if (!workflow) {
         const names = listRes.workflows.map(w => w.description || w.name || w.id).join(", ");
-        initError = `Workflow '${WORKFLOW_NAME}' not found. Available: ${names}`;
-        console.warn(`[kitsune] ${initError}`);
-        return false;
+        state.initError = `Workflow '${WORKFLOW_NAME}' not found. Available: ${names}`;
+        console.warn(`[kitsune] ${state.initError}`);
+        return;
     }
     const loadRes = await kitsuneRequest("load_workflow", { workflow_id: workflow.id });
     if (!loadRes) {
-        initError = "Failed to load workflow";
-        console.warn(`[kitsune] ${initError}`);
-        return false;
+        state.initError = "Failed to load workflow";
+        console.warn(`[kitsune] ${state.initError}`);
+        return;
     }
-    sessionId = loadRes.session_id;
-    console.log(`[kitsune] Session ${sessionId} — phase: ${loadRes.current_phase}`);
-    return true;
+    state.kitsuneSessionId = loadRes.session_id;
+    console.log(`[kitsune] Session ${state.kitsuneSessionId} — phase: ${loadRes.current_phase}`);
+}
+async function ensureSession(openCodeSessionId) {
+    const state = getSessionState(openCodeSessionId);
+    if (!state.kitsuneSessionId && !state.initError) {
+        state.initPromise ??= initSession(state).finally(() => {
+            state.initPromise = undefined;
+        });
+        await state.initPromise;
+    }
+    return state;
 }
 export const KitsunePlugin = async ({ client }) => {
     return {
+        event: async ({ event }) => {
+            if (event.type === "session.deleted") {
+                // Release the Kitsune state when OpenCode removes the conversation.
+                sessions.delete(event.properties.info.id);
+            }
+        },
         tool: {
             kitsune_transition: {
                 description: "Transition to the next phase in the Kitsune workflow. Call this when you want to advance: READY (plan→implement), DONE (implement→test), PASS (test→done), or FAIL (test→implement or implement→plan).",
@@ -71,11 +93,12 @@ export const KitsunePlugin = async ({ client }) => {
                     trigger: z.enum(["READY", "DONE", "PASS", "FAIL"]).describe("The transition trigger word")
                 },
                 execute: async (args, context) => {
-                    if (!sessionId) {
+                    const state = await ensureSession(context.sessionID);
+                    if (!state.kitsuneSessionId) {
                         return "[kitsune] Not initialized";
                     }
                     const res = await kitsuneRequest("transition", {
-                        session_id: sessionId,
+                        session_id: state.kitsuneSessionId,
                         trigger: args.trigger,
                     });
                     if (res?.success) {
@@ -89,12 +112,13 @@ export const KitsunePlugin = async ({ client }) => {
             kitsune_get_state: {
                 description: "Get current Kitsune workflow state: phase, allowed tools, available transitions.",
                 args: {},
-                execute: async () => {
-                    if (!sessionId) {
+                execute: async (_args, context) => {
+                    const sessionState = await ensureSession(context.sessionID);
+                    if (!sessionState.kitsuneSessionId) {
                         return "[kitsune] Not initialized";
                     }
                     const state = await kitsuneRequest("get_state", {
-                        session_id: sessionId,
+                        session_id: sessionState.kitsuneSessionId,
                     });
                     if (!state) {
                         return "[kitsune] Failed to get state";
@@ -104,11 +128,10 @@ export const KitsunePlugin = async ({ client }) => {
             }
         },
         "tool.execute.before": async (input, output) => {
-            if (!sessionId && !initError) {
-                await initSession();
-            }
-            if (!sessionId) {
-                console.warn(`[kitsune] Not initialized (${initError}), allowing tool`);
+            // Keep a separate Kitsune session for every OpenCode conversation.
+            const state = await ensureSession(input.sessionID);
+            if (!state.kitsuneSessionId) {
+                console.warn(`[kitsune] Not initialized (${state.initError}), allowing tool`);
                 return;
             }
             // Skip check for plugin's own tools
@@ -117,7 +140,7 @@ export const KitsunePlugin = async ({ client }) => {
                 return;
             }
             const result = await kitsuneRequest("check", {
-                session_id: sessionId,
+                session_id: state.kitsuneSessionId,
                 tool: input.tool.toLowerCase(),
                 args: output.args,
             });
