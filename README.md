@@ -22,7 +22,7 @@
 
 1. **External Actors** — AI agents (opencode, Claude Code, Cursor) + Developers
 2. **Plugin Layer** — Thin adapters (<100 lines each) that intercept tool calls
-3. **MCP Gateway** — FastAPI service: auth, session management, workflow CRUD, run history
+3. **MCP Gateway** — MCP Streamable HTTP server plus FastAPI services for auth, session management, workflow CRUD, and run history
 4. **Python Engine** — Pure FSM function `check(phase, tool, workflow) → bool`
 5. **Session Store** — Redis (hot sessions), Turso (persistent data), horizontally scalable
 6. **Dashboard** — Vanilla JS SPA: visual editor, YAML editor, run history
@@ -65,6 +65,20 @@ opencode configure kitsune --key sk_live_abc123
 # 3. Design workflow in browser, then run agent
 opencode "fix the bug in auth.py"
 ```
+
+## MCP tools
+
+Connect an MCP client to the Streamable HTTP endpoint at `/mcp/` and send the
+Kitsune API key in the `api-key` header. The server exposes:
+
+- `kitsune_check_tool` — checks a proposed agent tool call against the active phase
+- `kitsune_transition` — applies a workflow transition trigger
+- `kitsune_get_state` — returns the active phase and session counters
+
+The previous REST endpoints remain available at `/internal/mcp/check`,
+`/internal/mcp/transition`, and `/internal/mcp/get_state` for debugging and a
+gradual client migration. Their original `/mcp/...` aliases are temporarily
+retained for backward compatibility.
 
 ---
 
